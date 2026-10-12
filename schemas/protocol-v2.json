@@ -1,0 +1,36 @@
+{
+  "schema": "cabinet-protocol/2",
+  "note": "protocol schema v2 字段真源（v0.4 §九）。升 v3 时与旧版机械 diff。缺失字段回放规则：旧档一律记'未采集'/null，禁止默认值回填（F-28）。",
+  "fields": {
+    "schemaVersion": { "type": "number", "since": "2" },
+    "session": { "type": "string", "since": "1" },
+    "tier": { "type": "string", "note": "含升档路径如 standard→advanced；实际席数/轮次记 disclosure（schema 增 seats_actual/rounds_actual 挂批次 D 次件）", "since": "1" },
+    "topic": { "type": "string", "since": "1" },
+    "brief": { "type": "string", "note": "≤300 字速览", "since": "1" },
+    "seats": { "type": "array", "items": { "seat": "string", "agent": "string", "model": "string", "conclusion": "string（关键论据带证据等级）" }, "since": "1" },
+    "divergence": { "type": "array", "items": { "status": "未弥合|部分弥合|已解决|新发现", "text": "string" }, "since": "1", "note": "为空且未注明'首轮即收敛'不得合议" },
+    "decisions": { "type": "array of string", "since": "1", "note": "议定条款编号 P1…（跨场引用带场次前缀）" },
+    "actions": { "type": "array", "items": { "item": "string", "owner": "string", "due": "string" }, "since": "1" },
+    "dissent": { "type": "array of string", "since": "1" },
+    "disclosure": { "type": "string", "note": "AI 分角色推演＋各席 provider/model＋单/多源说明＋补位席注明＋轮次席数＋'调用轨未用 N 次'（P6-8）", "since": "1" },
+    "degraded": { "type": "boolean", "note": "到场 <3 席 true；旧档缺失记未采集不回填", "since": "2" },
+    "cost": {
+      "since": "1",
+      "fields": {
+        "calls": { "since": "1" },
+        "tokens_est": { "since": "1", "note": "接口口径粗估，如实注明不可观测部分" },
+        "cap": { "since": "1" },
+        "cap_hit": { "since": "1" },
+        "deviation": { "since": "2", "note": "calls 与 tokens_est 相对 cap 的实际比值" },
+        "reassigns": { "since": "2.1", "note": "可选；重派次数（灾备率分母）；旧档文本追溯不入账" }
+      }
+    },
+    "archived": { "type": "boolean", "since": "1" }
+  },
+  "eventsEnum": ["intake", "setup", "R1", "R2", "steering", "upgrade", "synthesis", "archive", "close", "cost"],
+  "eventsRules": {
+    "seq": "递增；seq0 允许一条 session_meta 元数据行（豁免每行一事件）",
+    "t": "ISO-8601，实时记录优先；事后补录取可证实下界并标 t_type:'lower-bound'",
+    "actor": "host|user|runtime|席位名|external"
+  }
+}

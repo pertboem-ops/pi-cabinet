@@ -1,0 +1,65 @@
+Cabinet smoke.mjs — 2026-10-08T15:22:46.340Z
+PluginDir: D:\ZCode\cabinet\plugin\cabinet
+Topic（固定）: 发布门冒烟
+计划长度: standard=4839 / advanced=5341 / max=5336
+结果：59 项检查，0 项失败
+----------------------------------------
+PASS | 计划生成 standard
+PASS | 计划生成 advanced
+PASS | 计划生成 max
+PASS | 批次D① · main.TIERS == config/tiers.json（双端）
+PASS | 批次D① · 生成标记区在位（main.js）
+PASS | standard 调用轨公式 cap=名义+一整轮重派+1 | 9 vs 9
+PASS | standard token 参考轨公式 标称×1.1+次均(四舍五入至千位) | 19000 vs 19000
+PASS | advanced 调用轨公式 cap=名义+一整轮重派+1 | 16 vs 16
+PASS | advanced token 参考轨公式 标称×1.1+次均(四舍五入至千位) | 54000 vs 54000
+PASS | max 调用轨公式 cap=名义+一整轮重派+1 | 19 vs 19
+PASS | max token 参考轨公式 标称×1.1+次均(四舍五入至千位) | 65000 vs 65000
+PASS | R5-06 负向：气质/立场/模型全重合＋红队同源 → FAIL（4 条） | ["气质维全重合：在场专职席气质全部相同","立场维全重合：角色卡锚点全部相同","模型维全重合：各席实际解析模型 <2 个 provider 家族","红队异源铁律被违反：红队批判官与会话模型同源"]
+PASS | R5-06 正向：三家族＋红队异源 → PASS | []
+PASS | R5-06 边界：空名单 → FAIL
+PASS | R5-06 家族口径：modelFamily 取 provider 前缀
+PASS | 调用轨执法轨定性
+PASS | token 参考轨软指标
+PASS | 两级映射：首选专职席
+PASS | 同一专职席不兼任两席
+PASS | 零配置回退
+PASS | 三维不重合检查
+PASS | N1 实际解析模型判定
+PASS | N2 超时≠失败+续等一次
+PASS | N4 全文优先摘录兜底
+PASS | E7 提前收敛边界 0/1
+PASS | E7 优先级裁定
+PASS | E8 升档重调 start
+PASS | E6 schemaVersion 2
+PASS | E6 degraded 字段
+PASS | E6 deviation + reassigns
+PASS | 分歧为空含豁免
+PASS | events v1.1 枚举10值
+PASS | events seq0 豁免
+PASS | events t_type 下界锚
+PASS | 内嵌片段优先（简报工程1）
+PASS | 不使用 resume 警告保留
+PASS | 点名全新委派
+PASS | reassigns 记账提示
+PASS | R5-03 超限标注不截断（§六政策）
+PASS | R5-06 三维检查判据为纯函数
+PASS | R5-06 开场披露含设计钉扎对照
+PASS | R6-08 未用 N 次入披露（第六场 P6-8）
+PASS | 空 topic 拒绝
+PASS | onUnload 生命周期
+PASS | PM-smoke · 未授权 state：authorized=false
+PASS | PM-smoke · 未授权 save 拒
+PASS | PM-smoke · authorize 落 grantedRoot
+PASS | PM-smoke · state 两席+指纹+脏标（从未导出）
+PASS | PM-smoke · 路径闸：临时目录 rootPathOk=false
+PASS | PM-smoke · save 插入（无 model 行→插在收束 --- 前）并命中清单
+PASS | PM-smoke · save CRLF 样本：\r 全保留+伪行不动
+PASS | PM-smoke · notInList 软放行（smoke 端到端）
+PASS | PM-smoke · save null 删除 model 行
+PASS | PM-smoke · export 拼合分支（writeText 不建目录→单 txt 落 root，PM-15） | {"kind":"bundle","bundles":1}
+PASS | PM-smoke · 拼合文件含拆分命令与段标记（2 件场景）
+PASS | PM-smoke · export 更新 lastExportHash=当前指纹
+PASS | PM-smoke · export 后脏标清除
+PASS | PM-smoke · 审计 jsonl 四行且含 notInList
+PASS | PM-smoke · 未知通道拒

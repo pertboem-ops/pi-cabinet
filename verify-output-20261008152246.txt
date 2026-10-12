@@ -1,0 +1,88 @@
+Cabinet verify.mjs — 2026-10-08T15:22:46.402Z
+PluginDir: D:\ZCode\cabinet\plugin\cabinet
+结果：84 项检查，0 项失败，0 项警告
+----------------------------------------
+PASS | 文件齐全
+PASS | manifest 可解析 · 版本 0.3.0 | 0.3.0
+PASS | manifest 权限 = 六值（0.3.0 面板面；inject 不可删）
+PASS | manifest engines ≥0.16.0
+PASS | manifest 技能文件全部存在
+PASS | PM · views[0] 五字段齐备（id/models·bot·entry·双语 title·order）
+PASS | PM · fs read=userSelected+["cabinet-*.md"]（PM-15）
+PASS | PM · fs write=userSelected+三 scope（cabinet-*.md/exports/**/拼合 txt，PM-15）
+PASS | PM · views entry 文件存在
+PASS | 门规1 · node --check main.js
+PASS | 门规1 · smoke.mjs 全过（阻断） | exit=0 结果：59 项检查，0 项失败
+PASS | 门规4 · generate --check 三件与 tiers.json 一致（阻断）
+PASS | 数据件 · config/tiers.json 三档齐
+PASS | 数据件 · protocol-v2.json eventsEnum 10 值
+PASS | 数据件 · protocol-v2.json reassigns since=2.1
+PASS | P1 · smoke 自报数 = 落盘断言行数 | 自报 59 vs 落盘 59
+PASS | P1 · smoke 自报失败数 = 0 | 自报失败 0
+PASS | 门规2 · 工具名一致 | start vs start
+PASS | 门规2 · 工具描述一致（manifest = main.js）
+PASS | 门规2 · schema 语义一致（深度比较）
+PASS | 门规4 · main.TIERS == config/tiers.json（逐字段）
+PASS | 门规2 · TIERS 三档齐备
+PASS | standard 调用轨公式 | 9
+PASS | standard token 参考轨公式 | 19000
+PASS | advanced 调用轨公式 | 16
+PASS | advanced token 参考轨公式 | 54000
+PASS | max 调用轨公式 | 19
+PASS | max token 参考轨公式 | 65000
+PASS | R5-06 · checkSeatDimensions 导出且空名单 FAIL
+PASS | R5-06 · modelFamily 导出且取 provider 前缀
+PASS | PM · 改写函数导出
+PASS | PM · 替换：块内 model 行换值
+PASS | PM · 替换：其余行逐字节不变（正文伪行不受影响）
+PASS | PM · 删除：null 删块内整行，正文伪行保留
+PASS | PM · 插入：无 model 行时插在收束 --- 前
+PASS | PM · CRLF：替换行以 \r 收尾且其余 \r 保留
+PASS | PM · CRLF：删除行后 \r 计数减一
+PASS | PM · 元字符：值含 + 不被 RegExp 注入破坏
+PASS | PM · 负向：无 frontmatter 报错
+PASS | PM · 负向：非法 model 格式（无斜杠）报错
+PASS | PM · 负向：frontmatter 未收束报错
+PASS | PM · parseMinisterFrontmatter 三字段提取
+PASS | PM · 路径闸：.agents\subagents 后缀通过（正/反斜杠/尾斜杠）
+PASS | PM · 路径闸：D 轨 ministers/ 与其他目录拒
+PASS | PM · 指纹：与顺序无关、内容变即变
+PASS | PM · onPanelInvoke 导出
+PASS | PM · 防御闸：cabinet-feng2.md 拒（glob 可匹配、正则真源拒）
+PASS | PM · 防御闸：路径分隔注入拒（../cabinet-feng.md）
+PASS | PM · 防御闸：非法 model 格式拒（硬闸）
+PASS | PM · 防御闸：未授权 save 拒 unauthorized
+PASS | PM · 防御闸：未授权 export 拒 unauthorized
+PASS | PM · authorize：落 grantedRoot；临时目录（非 .agents\subagents 后缀）rootPathOk=false 报警
+PASS | PM · notInList 软放行：合法格式不在清单仍保存并标记
+PASS | PM · 命中清单：notInList 空
+PASS | PM · state：席位/指纹/脏标齐备
+PASS | PM · export 子目录分支（mock 自动建目录）+lastExportHash 更新
+PASS | PM · export 后 state 脏标清除
+PASS | PM · 审计：jsonl 落数据目录且含 notInList 行
+PASS | PM · 面板体积 < 64KB | 11126B
+PASS | PM · 面板无外链资源（src/href 无 http）
+PASS | PM · 面板含 pluginBridge.invoke 调用点
+PASS | PM · 同源断言：面板 SUGGEST 与 ministers/README 家族表逐字一致（D3-b） | html=8 readme=8
+PASS | resume 白名单 · manifest.json
+PASS | resume 白名单 · main.js
+PASS | resume 白名单 · skills/cabinet.md
+PASS | resume 白名单 · README.md
+PASS | V-01 · 自带三角色卡在位 | coding.md,research.md,writing.md
+PASS | resume 零容忍 · 自带角色包 coding.md
+PASS | R5-05 · coding.md 首选专职席映射行 | cabinet-yuan / cabinet-mou / cabinet-zhong
+PASS | resume 零容忍 · 自带角色包 research.md
+PASS | R5-05 · research.md 首选专职席映射行 | cabinet-li / cabinet-feng / cabinet-shen / cabinet-ju
+PASS | resume 零容忍 · 自带角色包 writing.md
+PASS | R5-05 · writing.md 首选专职席映射行 | cabinet-yuan / cabinet-gu / cabinet-zhong / cabinet-ju
+PASS | R6-03 · 场景表 roles-coding 行映射名齐备 | cabinet-yuan / cabinet-mou / cabinet-zhong
+PASS | R6-03 · 场景表 roles-writing 行映射名齐备 | cabinet-yuan / cabinet-gu / cabinet-zhong / cabinet-ju
+PASS | R6-03 · 场景表 roles-research 行映射名齐备 | cabinet-li / cabinet-feng / cabinet-shen / cabinet-ju
+PASS | R6-03 · 场景表无幽灵阁员名（⊆ 8 件名集）
+PASS | 门规5 · README 无"六字段"残留
+PASS | E15 · scene 描述诚实化
+PASS | n≥40 带出处（README 引用设计方案）
+PASS | 首选专职席进文档（cabinet.md + README）
+PASS | phase 枚举 10 值进文档（cabinet.md）
+PASS | R5-03 · 超限政策句进文档（cabinet.md，标注不截断）
+PASS | 门规7 · 旧 verify.ps1 已退役

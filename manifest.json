@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "id": "local.cabinet",
+  "name": "Cabinet 内阁议事",
+  "version": "0.3.0",
+  "description": "低频重决策的内阁议事模式：4-6 个异质立场阁员论证、交叉质询、合议议定书；附阁员模型调节面板。Multi-perspective deliberation for high-stakes decisions.",
+  "main": "main.js",
+  "contributes": {
+    "skills": [
+      { "path": "skills/cabinet.md", "id": "cabinet" },
+      { "path": "skills/roles/coding.md", "id": "roles-coding" },
+      { "path": "skills/roles/writing.md", "id": "roles-writing" },
+      { "path": "skills/roles/research.md", "id": "roles-research" }
+    ],
+    "agentTools": [
+      {
+        "name": "start",
+        "description": "开启一场内阁议事：输入议题与场景，返回完整的议事编排计划（席位、模型混编规则、轮次、预算硬顶、中止点）；执行规程见技能 cabinet",
+        "risk": "low",
+        "schema": {
+          "type": "object",
+          "properties": {
+            "topic": {
+              "type": "string",
+              "description": "议事议题，应是一个需要权衡的决策或问题，而非事实查询"
+            },
+            "scene": {
+              "type": "string",
+              "enum": ["coding", "writing", "research", "general"],
+              "description": "议题场景，决定角色包与评分卡维度；缺省 = general（roles-research 通用包），由调用方按议题自行选择"
+            },
+            "roles": {
+              "type": "array",
+              "items": { "type": "string" },
+              "description": "自定义席位名单，覆盖场景角色包的默认席位；红队批判官为固定席不可移除"
+            },
+            "tier": {
+              "type": "string",
+              "enum": ["standard", "advanced", "max"],
+              "description": "议事档位：standard=4席×1轮（默认）、advanced=5席×2轮、max=6席×2轮；升档只能由用户显式指定"
+            },
+            "goal": {
+              "type": "string",
+              "description": "本场议事要产出什么，如'一份可执行的迁移方案'"
+            }
+          },
+          "required": ["topic"]
+        }
+      }
+    ],
+    "views": [
+      {
+        "id": "models",
+        "title": { "en": "Cabinet Models", "zh-CN": "内阁·阁员模型" },
+        "icon": "bot",
+        "entry": "views/models.html",
+        "order": 50
+      }
+    ]
+  },
+  "permissions": ["agent.prompt.inject", "agent.tool.register", "ui.view", "models.list", "fs.read", "fs.write"],
+  "fs": {
+    "read": { "root": "userSelected", "scope": ["cabinet-*.md"] },
+    "write": { "root": "userSelected", "scope": ["cabinet-*.md", "exports/**", "cabinet-ministers-export-*.txt"] }
+  },
+  "engines": {
+    "piDesktop": ">=0.16.0"
+  },
+  "activationEvents": ["onStartup"]
+}
