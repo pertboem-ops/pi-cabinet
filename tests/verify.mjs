@@ -45,7 +45,7 @@ async function runChecks() {
   let manifest = null;
   try {
     manifest = JSON.parse(manifestSrc);
-    check('manifest 可解析 · 版本 0.3.0', manifest.version === '0.3.0', manifest.version);
+    check('manifest 可解析 · 版本 0.4.0', manifest.version === '0.4.0', manifest.version);
     check('manifest 权限 = 六值（0.3.0 面板面；inject 不可删）', JSON.stringify(manifest.permissions) === '["agent.prompt.inject","agent.tool.register","ui.view","models.list","fs.read","fs.write"]');
     check('manifest engines ≥0.16.0', manifest.engines.piDesktop === '>=0.16.0');
     check('manifest 技能文件全部存在', manifest.contributes.skills.every((s) => fs.existsSync(path.join(pluginDir, s.path))));
@@ -71,7 +71,11 @@ async function runChecks() {
   // —— 3b. 门规④：数据件真源一致性（generate --check 阻断；v0.2.7 批次 D 首件）——
   // 嵌入块==生成产物即门规④落地；原 8 条数值看守断言（cabinet.md/README 含
   // 19K/54K/65K×6、公式文字含+1、次均成本表）随之退役——生成链覆盖其防护面。
-  const gen = spawnSync(process.execPath, [path.resolve(pluginDir, '..', '..', 'scripts', 'generate.mjs'), '--check'], { encoding: 'utf8' });
+  const genCandidates = [path.join(pluginDir, 'scripts', 'generate.mjs'), path.resolve(pluginDir, '..', '..', 'scripts', 'generate.mjs')];
+  const genPath = genCandidates.find((p) => fs.existsSync(p));
+  const gen = genPath
+    ? spawnSync(process.execPath, [genPath, '--check'], { encoding: 'utf8' })
+    : { status: 1, stdout: '', stderr: 'generate.mjs 缺失（包内 scripts/ 与插件级 scripts/ 均不在——v0.3.2 起树内优先、树外兜底，2120 场 P5③）' };
   check('门规4 · generate --check 三件与 tiers.json 一致（阻断）', gen.status === 0, (gen.stdout || gen.stderr || '').split('\n').filter((l) => l.includes('不一致') || l.includes('缺失')).join('; ').slice(0, 80));
 
   // —— 3c. 数据件结构（BOM 容错同 generate.mjs）——
@@ -81,6 +85,11 @@ async function runChecks() {
     const schemaData = JSON.parse((read(path.join(pluginDir, 'schemas', 'protocol-v2.json')) || '').replace(/^\uFEFF/, ''));
     check('数据件 · protocol-v2.json eventsEnum 10 值', schemaData.eventsEnum?.length === 10);
     check('数据件 · protocol-v2.json reassigns since=2.1', schemaData.fields?.cost?.fields?.reassigns?.since === '2.1');
+    check('数据件 · protocol-v2.json consensus since=2.2', schemaData.fields?.consensus?.since === '2.2');
+    check('数据件 · consensus 注记含禁回填+只读', (schemaData.fields?.consensus?.note || '').includes('禁止默认值回填') && (schemaData.fields?.consensus?.note || '').includes('不构成跳轮依据'));
+    check('数据件 · protocol-v2.json beyond_preanswer since=2.2（绊网）', schemaData.fields?.beyond_preanswer?.since === '2.2');
+    check('数据件 · beyond_preanswer 注记含恒 null+禁止回填', (schemaData.fields?.beyond_preanswer?.note || '').includes('恒 {count:null,items:[]}') && (schemaData.fields?.beyond_preanswer?.note || '').includes('禁止回填'));
+    check('数据件 · protocol-v2.json provenance since=2.3（预答席溯源块）', schemaData.fields?.provenance?.since === '2.3');
   } catch (e) {
     check('数据件 · 可解析', false, e.message);
   }
@@ -130,8 +139,11 @@ async function runChecks() {
     // —— 5. TIERS 公式机检（自数据件真源派生，v0.2.7 起读 config/tiers.json）——
     const { TIERS } = main;
     let tiersFile = null;
+    let preFile = null;
     try {
-      tiersFile = JSON.parse((read(path.join(pluginDir, 'config', 'tiers.json')) || '').replace(/^\uFEFF/, '')).tiers;
+      const tiersRoot = JSON.parse((read(path.join(pluginDir, 'config', 'tiers.json')) || '').replace(/^\uFEFF/, ''));
+      tiersFile = tiersRoot.tiers;
+      preFile = tiersRoot.preanswer || null;
     } catch { /* 结构断言已在 3c 报 FAIL */ }
     if (tiersFile) {
       const order2 = ['standard', 'advanced', 'max'];
@@ -141,6 +153,7 @@ async function runChecks() {
         if (TIERS[k]?.[f] !== tiersFile[k]?.[f]) diffs.push(`${k}.${f}: ${JSON.stringify(TIERS[k]?.[f])} vs ${JSON.stringify(tiersFile[k]?.[f])}`);
       }
       check('门规4 · main.TIERS == config/tiers.json（逐字段）', diffs.length === 0, diffs.slice(0, 3).join('; '));
+      check('门规4 · main.PREANSWER == config/tiers.json preanswer（双端）', !!preFile && JSON.stringify(main.PREANSWER) === JSON.stringify({ enabled: !!preFile.enabled, calls: preFile.calls, tokens: preFile.tokens }), JSON.stringify(main.PREANSWER));
     }
     const order = ['standard', 'advanced', 'max'];
     check('门规2 · TIERS 三档齐备', order.every((k) => TIERS[k]));
@@ -301,6 +314,27 @@ async function runChecks() {
   check('phase 枚举 10 值进文档（cabinet.md）', skillSrc.includes('steering') && skillSrc.includes('upgrade'));
   check('R5-03 · 超限政策句进文档（cabinet.md，标注不截断）', skillSrc.includes('如实标注 over_limit') && skillSrc.includes('不截断归档') && !skillSrc.includes('超限截断'));
   check('门规7 · 旧 verify.ps1 已退役', !fs.existsSync(path.join(pluginDir, 'tests', 'verify.ps1')));
+
+  // —— 8b. 共识面两栏速览＋检索纪律（议定 20261013-0037 P1/P6 · v0.3.1；C8 验算不验真）——
+  const canonDerive = 'strength 由计数机械派生（分母=到场且显式涉及该命题的席数；未涉及者单列「未表态」，不入分母不计支持；缺席席枚举名单）：全同→[全场一致]；严格过半非全同→[多数 n/m]；无严格过半（2:2、2:1:1 等并列）→[分裂]';
+  check('两栏速览 · 双件含共识面/分歧面对举', mainSrc.includes('共识面') && mainSrc.includes('分歧面') && skillSrc.includes('共识面') && skillSrc.includes('分歧面'));
+  check('两栏速览 · 强度派生规则句双件逐字一致', mainSrc.includes(canonDerive) && skillSrc.includes(canonDerive));
+  check('两栏速览 · 只读/空面/警示/阶段条款双件在册', ['共识面只读、不构成跳轮依据——跳轮仍只看实质分歧条数', '禁止由 0 分歧推强度', '伪多样性警示（全场一致≠正确，先查席位异源性）', '[R1 未质询]/[R2 已质询]'].every((s) => mainSrc.includes(s) && skillSrc.includes(s)));
+  check('两栏速览 · main.js schema 模板含 consensus 行', mainSrc.includes('"consensus"'));
+  check('P6 · 检索纪律双件在册（排除 .cabinet 归档目录）', mainSrc.includes('排除 .cabinet 归档目录') && skillSrc.includes('排除 .cabinet 归档目录'));
+
+  // —— 8c. beyond_preanswer 绊网三件同步＋语料纪律＋scripts 包内在位（议定 20261012-2233 P3 补装 pi 轨 / 2120 场 P5②③④ · v0.3.2）——
+  check('绊网 · main.js schema 模板含 beyond_preanswer 且值恒 null', mainSrc.includes('"beyond_preanswer": { "count": null, "items": [] }'));
+  check('绊网 · cabinet.md 字段清单含 beyond_preanswer 绊网注记', skillSrc.includes('beyond_preanswer') && skillSrc.includes('禁止回填'));
+  check('语料纪律 · 两条入册（cabinet.md）', skillSrc.includes('2312 据席主张') && skillSrc.includes('其枚举内最高档'));
+  check('门规8 · scripts/generate.mjs 与 audit.mjs 包内在位（v0.3.2）', fs.existsSync(path.join(pluginDir, 'scripts', 'generate.mjs')) && fs.existsSync(path.join(pluginDir, 'scripts', 'audit.mjs')));
+
+  // —— 8d. 预答席三门＋放弃声明（v0.4.0，2120 场 v3 §四-1；机制默认关，断言守"默认关+条款在册"）——
+  check('预答门1 · provenance 规程在册（main.js 模板含块与完备判据）', mainSrc.includes('"provenance"') && mainSrc.includes('provenance_incomplete:true') && mainSrc.includes('行数=decisions 条数'));
+  check('预答门2 · 封存哈希链条款在册（phash/tamper/四元组）', mainSrc.includes('phash') && mainSrc.includes('tamper') && mainSrc.includes('{sha256, 字数, model, effort}'));
+  check('预答门3 · 双计数器执法文本在册（预答轨独立计数）', mainSrc.includes('双计数器') && mainSrc.includes('预答轨'));
+  check('预答门 · 放弃声明成文（main.js+cabinet.md 双件）', mainSrc.includes('明示放弃而非回答') && skillSrc.includes('明示放弃而非回答') && skillSrc.includes('不计印证'));
+  check('预答门 · cabinet.md 规程节在册（默认关闭+停用判据）', skillSrc.includes('预答席（默认关闭') && skillSrc.includes('stop:ritual-3zero'));
 }
 
 // V-01：检查体包顶层 try——结果未打印前的任何异常（结构漂移、文件缺失竞态）

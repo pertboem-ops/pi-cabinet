@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "id": "local.cabinet",
   "name": "Cabinet 内阁议事",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "低频重决策的内阁议事模式：4-6 个异质立场阁员论证、交叉质询、合议议定书；附阁员模型调节面板。Multi-perspective deliberation for high-stakes decisions.",
   "main": "main.js",
   "contributes": {

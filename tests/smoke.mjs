@@ -65,6 +65,10 @@ for (const k of order) {
   check(`${k} token 参考轨公式 标称×1.1+次均(四舍五入至千位)`, t.tokenCap === expectToken, `${t.tokenCap} vs ${expectToken}`);
 }
 
+// —— v0.4.0 预答轨（2120 场重启设计 v3；默认关负向断言）——
+check('预答轨 · PREANSWER 导出且默认关（calls=1）', main.PREANSWER && main.PREANSWER.enabled === false && main.PREANSWER.calls === 1 && typeof main.PREANSWER.tokens === 'number', JSON.stringify(main.PREANSWER));
+check('预答轨 · 默认关时计划不含预答席规程段（负向）', !all.includes('第 0.6 步') && !all.includes('phash'));
+
 // —— 计划内容断言（v0.2.3 关键规则）——
 const C = {
   '调用轨执法轨定性': all.includes('调用轨（执法轨，触顶即中止）'),

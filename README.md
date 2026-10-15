@@ -7,6 +7,22 @@
 骨架上增加：场景角色包、专职阁员两级映射、跨 provider 模型混编、轮间用户
 介入点、双轨预算、灾备降级路径、议定书归档与运行日志。
 
+> **v0.4.0（2026-10-13）**：M2′ 代码门批（20261013-2120 场重启设计 v3 落地）——
+> 封存预答席机制入码（默认关）：tiers.json 增 preanswer 独立预算轨、generate.mjs
+> 渲染 PREANSWER 常量、main.js 条件渲染"第 0.6 步"预答规程与双计数器执法文本、
+> schema 增 provenance 块（since 2.3）、verify 增预答三门断言组、smoke 增默认关
+> 负向断言；启用前置四条全部闭合（②(e)′并入①、③复审方 A+C，均用户裁定；
+> ④成本基准实测 docs/预答席成本基准.md）。启用方式见 cabinet.md"预答席"节。
+>
+> **v0.3.2（2026-10-13）**：第五场审议（20261013-2120-sealed-control）地基批——
+> beyond_preanswer 占位绊网补装 pi 轨（schema+main.js+cabinet.md 三件同步+verify
+> 断言组，对齐 2233 P3）；scripts/ 收进包内（generate.mjs 包内版+新增 audit.mjs
+> 最小归档对账器，填补三场"audit=未跑"缺口），verify 门规④ 解析改树内优先、
+> 树外兜底；语料纪律两条入册（cabinet.md 证据标级节）；装机副本与 D 真源 SHA
+> 对账完成、基线锁定（议定书 P5）。
+> 重启设计 v3（封存预答席·缓建至 M2′）成文见 `docs/重启设计-v3.md`——启用
+> 前置四条不过则任何条款不入码。
+>
 > **v0.2.7（2026-10-06）**：批次 D 首件·数据件真源——新增 config/
 > tiers.json（档位预算唯一真源）与 schemas/protocol-v2.json（schema
 > 字段真源）；scripts/generate.mjs 渲染 main.js TIERS 块与本文/cabinet.md
@@ -127,6 +143,9 @@ cost.deviation。提前收敛：0 分歧直接合议、1 分歧停等跳质询�
 冒烟阻断）、manifest↔main.js JSON 语义比对、TIERS 公式机检、
 resume 白名单分级、旧过时 schema 表述零容忍；输出留档默认写包外
 （`--out=` 可指定）。改动任何文件后先跑 `node tests/verify.mjs` 全绿再打包。
+`scripts/audit.mjs`（v0.3.2 新增）：归档对账器——按场核对 dispatch: 事件数
+与 cost.calls、beyond_preanswer 恒 null 绊网、必备归档件齐备；议事归档后跑
+`node scripts/audit.mjs`，把结论写入 index.jsonl 的 audit 列。
 
 ## 上线后校准（改判率）
 

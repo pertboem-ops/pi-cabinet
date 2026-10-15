@@ -1,0 +1,11 @@
+# 运行产物 / Runtime artifacts
+.cabinet/
+evidence-out/
+dist/
+logs/
+smoke-output-*.txt
+verify-output-*.txt
+
+# 系统文件
+.DS_Store
+Thumbs.db

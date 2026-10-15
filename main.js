@@ -79,6 +79,9 @@ const TIERS = {
     estimate: "约 55K token / 12 次调用 / 约 2 分钟",
   },
 };
+
+// 预答席独立预算轨（默认关；v0.4.0＝2120 场重启设计 v3 §二-2）
+const PREANSWER = {"enabled":false,"calls":1,"tokens":3500};
 // <<< TIERS
 
 const SCENE_ROLE_PACKS = {
@@ -148,6 +151,10 @@ function buildInstruction({ topic, scene, roles, tier, goal }) {
   const goalLine = goal
     ? `本场议事必须产出：${goal}`
     : "本场议事应收敛为一份明确、可执行的结论；无法收敛时如实记录分歧状态，不强行凑共识。";
+  // v0.4.0 预答轨（20261013-2120 场重启设计 v3，docs/重启设计-v3.md）：
+  // 默认关；用户改 config/tiers.json preanswer.enabled=true 并重渲后下一场生效
+  // （选材机械化：逐场显式开启，无"适合议题"筛选条款——禁裁量）。
+  const preOn = typeof PREANSWER !== "undefined" && PREANSWER.enabled === true;
 
   return [
     `## 内阁议事编排计划`,
@@ -157,6 +164,9 @@ function buildInstruction({ topic, scene, roles, tier, goal }) {
     `**档位：** ${tier || "standard"} = ${t.seats} 席 × ${t.rounds} 轮`,
     `**预算：** 调用轨（执法轨，触顶即中止）${t.callCap} 次子智能体委派（= 名义 ${t.nominal} + 一整轮重派 + 1）；`,
     `token 轨（参考轨，软指标，入账不中止）${t.tokenCap}（= 标称 ${t.nominalTokens / 1000}K ×1.1 + 次均成本，四舍五入至千位）。`,
+    preOn
+      ? `**预答轨（独立计数器，本场已开启）**：预答席 1 次委派单独记账（cap ${PREANSWER.calls} 次委派 / 参考 ${PREANSWER.tokens} token），不占席位轨调用额度。（v0.4.0＝2120 场 v3 §二-2）`
+      : null,
     `**记账口径：** 只计 Task 子智能体委派与子智能体 token；主持人自身回合、插件工具调用不计。`,
     goalLine,
     ``,
@@ -191,6 +201,21 @@ function buildInstruction({ topic, scene, roles, tier, goal }) {
     `     来自角色卡而非模型差异"后继续。**委派目录为空 ≠ 单源**——先看各席实际模型再下结论。`,
     `5. **开场披露**：向用户输出一行说明——"本场议事阁员为 AI 分角色推演，价值在强制多视角，不代表独立专家意见。"`,
     ``,
+    ...(preOn
+      ? [
+          `### 第 0.6 步 — 预答席（封存预答；本场用户已显式开启）`,
+          ``,
+          `在派发任何议事席位**之前**，先串行完成预答席工序（不得与席位派发并发）：`,
+          `1. **裸议题**：把议题改写为决策问题本体——剥离前案场次编号、缓建/否决理由与门槛措辞、用户倾向词；反事实检验（删句后预答席仍能陈述问题与约束即合格）；改写文本写入 events.jsonl（event 前缀 preanswer:topic-bare）。`,
+          `2. **派发预答席**：1 个子智能体，异 provider 家族且与在场席同档思考强度；简报硬条款——全文自写平台临时区 sealed/<场id>.md（不可写则回退 .cabinet/<场id>/sealed/ 并在 disclosure 记 fallback）；**最终回复仅含 {sha256, 字数, model, effort} 四元组，禁止复述任何内容句**。`,
+          `3. **封存**：你只把四元组写入 events.jsonl（phash 行，t+hash 双锚、实时记录、不含路径——路径由场 id 确定性派生）；预答席不入席位名单、不进任何席位简报、不参与质询。`,
+          `4. **启封**：挂"R1 后必停"停等点由用户选择是否启封（不新增停等点）；启封时重算哈希，错配记 tamper 事件并降级该预答为不可用。`,
+          `5. **收敛**：启封后你作三态处置（采纳某点/分歧存照/整体否决）＋议定书 provenance 块（行数=decisions 条数，缺行标 provenance_incomplete:true；decision-log 非证据，禁趋势/聚合引用）。`,
+          `6. **放弃声明（成文措辞，不写"双轨"）**：议定书必含——"本变体不测量。'超出合议的异源增量'轨无仪器，明示放弃而非回答；预答产出仅限收敛参考与退场触发；预答-合议一致不计印证。"`,
+          `7. **停用判据（先冻结后启用）**：T1 连续 3 场"采纳某点"计 0 → 自动停用（index 记 stop:ritual-3zero）；T2 连续 3 场"整体否决" → 同；T3 预答轨超支且处置∈{存照,否决} 计 waste、3 场 ≥2 次 → 停用复审。停用只作退场触发、永不作升格依据；复审由不启用预答席的下一场议事执行（2026-10-13 用户裁定 A+C）。`,
+          ``,
+        ]
+      : []),
     `### 第 1 步 — 第一轮：独立立场书（并发派发 ${t.seats} 个 Task）`,
     ``,
     `每个 Task 的简报必须包含：`,
@@ -202,6 +227,7 @@ function buildInstruction({ topic, scene, roles, tier, goal }) {
     `- 输出格式要求：立场书 ≤600 字（目标值；超限如实标注 over_limit、不截断归档）；结尾给出该席**最坚持的一点**与`,
     `  **最没把握的一点**；关键论据标注证据等级——【核验】亲自读文件/跑命令验证过、`,
     `  【推断】由材料推理、【转述】引自他席或外部来源。`,
+    `- 检索纪律：阁员做工作区级 Grep 复核时排除 .cabinet 归档目录（限定活文件路径或用排除模式）。`,
     ``,
     `全部席位**同时**派发，然后用 TaskWait 收齐。`,
     ``,
@@ -215,7 +241,13 @@ function buildInstruction({ topic, scene, roles, tier, goal }) {
     ``,
     `### 第 2 步 — 立场速览与中止点（**必须停下等用户**）`,
     ``,
-    `收齐并核对后输出立场速览：每席 ≤100 字摘要 + 你判定的实质分歧点清单（编号）。`,
+    `收齐并核对后输出立场速览：每席 ≤100 字摘要 + 两栏对举（v0.3.1 起，议定 20261013-0037 P1）——`,
+    `- **共识面**：逐条列出两席及以上立场重合的命题，每条 = text＋votes（支持席位名单）＋strength＋阶段标注。`,
+    `  strength 由计数机械派生（分母=到场且显式涉及该命题的席数；未涉及者单列「未表态」，不入分母不计支持；缺席席枚举名单）：全同→[全场一致]；严格过半非全同→[多数 n/m]；无严格过半（2:2、2:1:1 等并列）→[分裂]。`,
+    `  每条注 [R1 未质询]/[R2 已质询]；[全场一致] 条目旁附伪多样性警示（全场一致≠正确，先查席位异源性）。`,
+    `  共识面只读、不构成跳轮依据——跳轮仍只看实质分歧条数。`,
+    `- **分歧面**：你判定的实质分歧点清单（编号，标对立席位）。`,
+    `空面注记：0 条分歧记"首轮即收敛"、共识面记"未采集"，禁止由 0 分歧推强度；共识面为空记"无实质共识"。`,
     `然后**停止推进**，向用户给出选择：`,
     ``,
     ...(t.rounds > 1
@@ -267,6 +299,11 @@ function buildInstruction({ topic, scene, roles, tier, goal }) {
     `  "topic": "${topic.slice(0, 60)}",`,
     `  "brief": "<≤300 字速览>",`,
     `  "seats": [{"seat": "...", "agent": "...", "model": "...", "conclusion": "...（关键论据带证据等级）"}],`,
+    `  "consensus": [{"text": "...", "votes": ["支持席位名单"], "strength": "全场一致|多数|分裂（计数派生）", "stage": "R1未质询|R2已质询"}],`,
+    `  "beyond_preanswer": { "count": null, "items": [] },  // 占位列（2233 P3 绊网）：恒 null，禁止回填；升格须显式改 verify 断言`,
+    preOn
+      ? `  "provenance": [{"clause": "P1…", "source": "preanswer_only|synthesis_only|both", "disposition": "采纳|存照|否决"}],  // 预答席启用场必填：行数=decisions 条数（机械完备判据），缺行标 provenance_incomplete:true；decision-log 非证据`
+      : null,
     `  "divergence": [{"status": "未弥合|部分弥合|已解决|新发现", "text": "..."}],`,
     `  "decisions": ["<议定条款，编号 P1...>"],`,
     `  "actions": [{"item": "...", "owner": "...", "due": "..."}],`,
@@ -304,6 +341,9 @@ function buildInstruction({ topic, scene, roles, tier, goal }) {
     `### 全程预算纪律`,
     ``,
     `- **调用轨 = 执法轨**：逐次委派记账（Task 委派计数），触达 ${t.callCap} 次立即中止议事——`,
+    preOn
+      ? `- **双计数器（本场预答开启）**：预答席委派单独记账（预答轨 cap ${PREANSWER.calls} 次委派）；席位轨 ${t.callCap} 次与预答轨互不占用，任一轨触顶即中止对应流程。`
+      : null,
     `  以已收材料合成部分议定书，不追加委派、不询问用户。余量依据：1 场实跑观测（首场：`,
     `  一次灾备恰好耗尽无余量额度）+ 1 条档案在册的自述记录（v1 原型报告，转述级，非独立核验）；`,
     `  数值在 reassigns 分母 ≥5 场前为暂定。**议程闭合时在 disclosure 记"调用轨未用 N 次"`,
@@ -720,6 +760,7 @@ module.exports = {
   onLoad,
   onUnload,
   TIERS,
+  PREANSWER,
   modelFamily,
   checkSeatDimensions,
   onPanelInvoke,

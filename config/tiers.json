@@ -37,5 +37,11 @@
       "nominal": "12 次",
       "estimate": "约 55K token / 12 次调用 / 约 2 分钟"
     }
+  },
+  "preanswer": {
+    "enabled": false,
+    "calls": 1,
+    "tokens": 3500,
+    "note": "预答席独立预算轨（20261013-2120 场重启设计 v3 §二-2，见 docs/重启设计-v3.md）。默认关——选材机械化：启用须改 enabled:true 并跑 node scripts/generate.mjs 重渲，下一场生效，无'适合议题'筛选条款（禁裁量）。tokens 初值按成本基准确（docs/预答席成本基准.md：实测 ≈2.5-3.5K 接口口径粗估）"
   }
 }
